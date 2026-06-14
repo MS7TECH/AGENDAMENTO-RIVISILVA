@@ -36,7 +36,7 @@
         .time-selected { background: #D4AF37; color: white; border-color: #D4AF37; }
         .occupied { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; text-decoration: line-through; pointer-events: none; }
         
-        .perfil-img { mask-image: linear-gradient(to right, black 70%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 70%, transparent 100%); object-fit: cover; object-position: top; }
+        .perfil-img { mask-image: linear-gradient(to right, black 70%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 70%, transparent 100%); object-fit: cover; object-position: top; transition: src 0.5s ease-in-out; }
         @media (max-width: 1024px) { .perfil-img { mask-image: linear-gradient(to bottom, black 70%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%); height: 350px; width: 100%; } }
     </style>
 </head>
@@ -66,7 +66,7 @@
     <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         
         <div class="flex flex-col lg:flex-row gap-6 items-center lg:items-start lg:pr-10">
-            <img src="foto_perfil.jpg" alt="Rivi Silva" class="perfil-img w-full lg:w-1/2 rounded-3xl lg:rounded-none">
+            <img id="carouselImg" src="foto_perfil.jpg" alt="Rivi Silva" class="perfil-img w-full lg:w-1/2 rounded-3xl lg:rounded-none">
             <div class="flex flex-col gap-6 mt-4 lg:mt-20">
                 <h2 class="text-4xl md:text-5xl font-light text-zinc-900 leading-tight text-center lg:text-left">
                     Seu momento de brilhar começa aqui! <span class="font-semibold gold-text"> 💅</span>
@@ -163,14 +163,10 @@
             navigator.clipboard.writeText(pixVal).then(() => { alert("Chave PIX copiada! 💅"); });
         }
 
-        /** * TRAVA DE SEGURANÇA MÁXIMA: 
-         * Força a busca das regras direto do banco no momento do clique, ignorando o que está em cache.
-         */
         async function validarHorarioNoMomento(dataS, horaS) {
             const agora = new Date();
             const hojeStr = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
             
-            // 1. Relógio: Bloqueia se o tempo já passou (para hoje)
             if (dataS === hojeStr) {
                 const [h, m] = horaS.split(':').map(Number);
                 const minutosSelecionado = (h * 60) + m;
@@ -182,7 +178,6 @@
                 }
             }
 
-            // 2. Banco: Busca as configurações REAIS de agora
             const { data: configDB } = await _supabase.from('agenda_config').select('*').eq('id', 1).single();
             const { data: exDB } = await _supabase.from('agenda_excecoes').select('*').eq('data', dataS).maybeSingle();
 
@@ -190,7 +185,6 @@
             const hF = exDB?.hora_fim || configDB.hora_fim;
             const intervalo = configDB.intervalo_minutos;
 
-            // Reconstrói a grade permitida com base nos novos dados
             let horariosReaisPermitidos = [];
             let [h, m] = hI.split(':').map(Number);
             let totalMin = (h * 60) + m;
@@ -202,7 +196,6 @@
                 totalMin += parseInt(intervalo);
             }
 
-            // Validação final: o horário que ela clicou ainda existe na nova regra?
             if (!horariosReaisPermitidos.includes(horaS)) {
                 alert("⚠️ Os horários foram atualizados. Por favor, escolha novamente na lista atualizada.");
                 window.location.reload();
@@ -216,6 +209,18 @@
             carregarServicos();
             await atualizarCalendario();
             if (window.lucide) lucide.createIcons();
+            
+            // Inicialização da rotação do carrossel de fotos (3000ms = 3 segundos)
+            let currentImgIndex = 0;
+            const imagesList = ["foto_perfil.jpg", "foto_perfil2.jpg", "foto_perfil3.jpg", "foto_perfil4.jpg"];
+            const imgElement = document.getElementById("carouselImg");
+            
+            setInterval(() => {
+                currentImgIndex = (currentImgIndex + 1) % imagesList.length;
+                if(imgElement) {
+                    imgElement.src = imagesList[currentImgIndex];
+                }
+            }, 3000);
         }
 
         async function mudarMes(direcao) {
@@ -341,7 +346,6 @@
             btn.disabled = true;
             btnText.innerText = "Verificando disponibilidade...";
             
-            // Re-checa se o horário ainda é válido antes de salvar no banco
             const validoFinal = await validarHorarioNoMomento(dataSelecionada, horaSelecionada);
             if(!validoFinal) {
                 btn.disabled = false;
@@ -358,7 +362,7 @@
                 cliente_nome: n.toUpperCase(), telefone: z, data_atendimento: dataSelecionada,
                 horario: horaSelecionada, servico: svs.join(", "), status: "Aguardando",
                 valor: parseFloat(totalStr.replace('R$ ', '').replace(',', '.'))
-            }]);
+             }]);
 
             if(!error) {
                 const msg = `Agendamento Rivi Silva 💅\n\nNome: ${n.toUpperCase()}\nData: ${dataSelecionada.split('-').reverse().join('/')}\nHora: ${horaSelecionada}\nServiços: ${svs.join(", ")}\nTotal: ${totalStr}\n\nsegue o meu comprovante com o sinal para garantir o meu agendamento!`;
