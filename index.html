@@ -36,7 +36,7 @@
         .time-selected { background: #D4AF37; color: white; border-color: #D4AF37; }
         .occupied { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; text-decoration: line-through; pointer-events: none; }
         
-        .perfil-img { mask-image: linear-gradient(to right, black 70%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 70%, transparent 100%); object-fit: cover; object-position: top; transition: src 0.5s ease-in-out; }
+        .perfil-img { mask-image: linear-gradient(to right, black 70%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 70%, transparent 100%); object-fit: cover; object-position: top; }
         @media (max-width: 1024px) { .perfil-img { mask-image: linear-gradient(to bottom, black 70%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%); height: 350px; width: 100%; } }
     </style>
 </head>
@@ -66,7 +66,7 @@
     <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         
         <div class="flex flex-col lg:flex-row gap-6 items-center lg:items-start lg:pr-10">
-            <img id="carouselImg" src="foto_perfil.jpg" alt="Rivi Silva" class="perfil-img w-full lg:w-1/2 rounded-3xl lg:rounded-none">
+            <img id="carouselImg" src="foto_perfil.jpg" alt="Rivi Silva" class="perfil-img w-full lg:w-1/2 rounded-3xl lg:rounded-none transition-opacity duration-500 opacity-100">
             <div class="flex flex-col gap-6 mt-4 lg:mt-20">
                 <h2 class="text-4xl md:text-5xl font-light text-zinc-900 leading-tight text-center lg:text-left">
                     Seu momento de brilhar começa aqui! <span class="font-semibold gold-text"> 💅</span>
@@ -169,9 +169,9 @@
             
             if (dataS === hojeStr) {
                 const [h, m] = horaS.split(':').map(Number);
-                const minutosSelecionado = (h * 60) + m;
-                const minutosAgora = (agora.getHours() * 60) + agora.getMinutes();
-                if (minutosSelecionado <= minutosAgora) {
+                const minutesSelecionado = (h * 60) + m;
+                const minutesAgora = (agora.getHours() * 60) + agora.getMinutes();
+                if (minutesSelecionado <= minutesAgora) {
                     alert("⚠️ Esse horário expirou! Atualizando horários...");
                     window.location.reload();
                     return false;
@@ -197,7 +197,7 @@
             }
 
             if (!horariosReaisPermitidos.includes(horaS)) {
-                alert("⚠️ Os horários foram atualizados. Por favor, escolha novamente na lista atualizada.");
+                alert("⚠️ Os horários foram updated. Por favor, escolha novamente na lista atualizada.");
                 window.location.reload();
                 return false;
             }
@@ -210,17 +210,26 @@
             await atualizarCalendario();
             if (window.lucide) lucide.createIcons();
             
-            // Inicialização da rotação do carrossel de fotos (3000ms = 3 segundos)
+            // ✅ SISTEMA DE CARROSSEL COM TRANSIÇÃO SUAVE (FADE EFFECT)
             let currentImgIndex = 0;
             const imagesList = ["foto_perfil.jpg", "foto_perfil2.jpg", "foto_perfil3.jpg", "foto_perfil4.jpg"];
             const imgElement = document.getElementById("carouselImg");
             
             setInterval(() => {
-                currentImgIndex = (currentImgIndex + 1) % imagesList.length;
                 if(imgElement) {
-                    imgElement.src = imagesList[currentImgIndex];
+                    // 1. Desaparece a imagem atual diminuindo opacidade para 0
+                    imgElement.classList.replace('opacity-100', 'opacity-0');
+                    
+                    setTimeout(() => {
+                        // 2. Troca a origem da imagem enquanto ela está invisível
+                        currentImgIndex = (currentImgIndex + 1) % imagesList.length;
+                        imgElement.src = imagesList[currentImgIndex];
+                        
+                        // 3. Reaparece a imagem nova subindo opacidade para 100 suavemente
+                        imgElement.classList.replace('opacity-0', 'opacity-100');
+                    }, 500); // 500ms bate certinho com o tempo da classe 'duration-500' do Tailwind
                 }
-            }, 3000);
+            }, 3500); // Troca a cada 3.5 segundos para dar tempo do efeito acontecer perfeitamente
         }
 
         async function mudarMes(direcao) {
