@@ -14,7 +14,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #FFFFFF; font-family: 'Montserrat', sans-serif; background-image: radial-gradient(at 10% 10%, rgba(212, 175, 55, 0.05) 0px, transparent 50%); }
+        body { background-color: #FFFFFF; font-family: 'Montserrat', sans-serif; background-image: radial-gradient(at 10% 10%, rgba(212, 175, 55, 0.05) 0px, transparent 50%); overflow-x: hidden; }
         .gold-text { color: #D4AF37; }
         .gold-bg { background: linear-gradient(135deg, #D4AF37 0%, #F5E6A3 100%); }
         .clean-card { background-color: #FDFDFD; border: 1px solid rgba(212, 175, 55, 0.15); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05); }
@@ -39,23 +39,8 @@
         .perfil-img { mask-image: linear-gradient(to right, black 70%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 70%, transparent 100%); object-fit: cover; object-position: top; }
         @media (max-width: 1024px) { .perfil-img { mask-image: linear-gradient(to bottom, black 70%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%); height: 350px; width: 100%; } }
 
-        /* 🎥 ANIMAÇÃO DO TEXTO EM LOOP NO INPUT DE ANIVERSÁRIO */
-        .placeholder-move::placeholder {
-            display: inline-block;
-            white-space: nowrap;
-            padding-left: 0%;
-            animation: marq 15s linear infinite;
-        }
-
-        /* Se a cliente clicar para digitar, a animação pausa para não atrapalhar */
-        .placeholder-move:focus::placeholder {
-            animation-play-state: paused;
-        }
-
-        @keyframes marq {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-65%, 0); }
-        }
+        /* Estilização da label flutuante simulada para o letreiro funcionar limpo */
+        .marquee-container { position: absolute; left: 2.75rem; top: 50%; transform: translateY(-50%); right: 1rem; pointer-events: none; display: flex; align-items: center; }
     </style>
 </head>
 <body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
@@ -89,7 +74,7 @@
                 <h2 class="text-4xl md:text-5xl font-light text-zinc-900 leading-tight text-center lg:text-left">
                     Seu momento de brilhar começa aqui! <span class="font-semibold gold-text"> 💅</span>
                 </h2>
-                <p class="text-zinc-600 text-lg italic border-l-2 border-[#D4AF37] pl-4">"Unhas feitas, auto-esteem renovada."</p>
+                <p class="text-zinc-600 text-lg italic border-l-2 border-[#D4AF37] pl-4">"Unhas feitas, auto-estima renovada."</p>
             </div>
         </div>
 
@@ -101,14 +86,20 @@
                     <i data-lucide="user" class="input-icon"></i>
                     <input id="nome" type="text" oninput="this.value = nameMask(this.value)" placeholder="Seu Nome Completo" class="form-input w-full p-4 rounded-xl uppercase text-xs font-bold bg-zinc-50">
                 </div>
+                
                 <div class="form-input-container">
                     <i data-lucide="smartphone" class="input-icon"></i>
                     <input id="whatsapp_input" type="tel" maxlength="15" oninput="this.value = phoneMask(this.value)" placeholder="(71) 00000-0000" class="form-input w-full p-4 rounded-xl text-xs font-bold bg-zinc-50">
                 </div>
-                <div class="form-input-container overflow-hidden">
-                    <i data-lucide="cake" class="input-icon z-10 bg-zinc-50 pr-1"></i>
-                    <div class="relative w-full overflow-hidden rounded-xl">
-                        <input id="aniversario_input" type="text" maxlength="5" oninput="this.value = birthdayMask(this.value)" placeholder="Aniversário: DD/MM (Concorra a descontos imperdíveis no seu mês!) 🎂 [Opcional]               " class="form-input placeholder-move w-full p-4 rounded-xl text-xs font-bold bg-zinc-50">
+                
+                <div class="form-input-container">
+                    <i data-lucide="cake" class="input-icon z-10"></i>
+                    <input id="aniversario_input" type="text" maxlength="5" oninput="this.value = birthdayMask(this.value); toggleMarquee(this.value)" onfocus="document.getElementById('lbl-marquee').style.display='none'" onblur="toggleMarquee(this.value)" class="form-input w-full p-4 rounded-xl text-xs font-bold bg-zinc-50 relative z-0">
+                    
+                    <div id="lbl-marquee" class="marquee-container text-zinc-400 text-xs font-bold">
+                        <marquee scrollamount="4" behavior="scroll" direction="left" class="w-full">
+                            Insira Sua Data de Aniversário (DD/MM) e Concorra a descontos especiais no seu mês! 🎂 [Opcional]
+                        </marquee>
                     </div>
                 </div>
             </div>
@@ -193,6 +184,16 @@
                 v = v.substring(0, 2) + "/" + v.substring(2);
             }
             return v;
+        }
+
+        // Controla sumiço do letreiro quando a cliente digita algo
+        function toggleMarquee(val) {
+            const marquee = document.getElementById('lbl-marquee');
+            if(val.length > 0) {
+                marquee.style.display = 'none';
+            } else {
+                marquee.style.display = 'flex';
+            }
         }
 
         function copyPix() {
