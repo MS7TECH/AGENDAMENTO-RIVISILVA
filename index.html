@@ -97,7 +97,7 @@
                     <input id="aniversario_input" type="text" maxlength="5" oninput="this.value = birthdayMask(this.value); toggleMarquee(this.value)" onfocus="document.getElementById('lbl-marquee').style.display='none'" onblur="toggleMarquee(this.value)" class="form-input w-full p-4 rounded-xl text-xs font-bold bg-zinc-50 relative z-0">
                     
                     <div id="lbl-marquee" class="marquee-container text-zinc-400 text-xs font-bold">
-                        <marquee scrollamount="4" behavior="scroll" direction="left" class="w-full">
+                        <marquee scrollamount="2" scrolldelay="30" behavior="scroll" direction="left" class="w-full">
                             Insira Sua Data de Aniversário (DD/MM) e Concorra a descontos especiais no seu mês! 🎂 [Opcional]
                         </marquee>
                     </div>
@@ -186,7 +186,6 @@
             return v;
         }
 
-        // Controla sumiço do letreiro quando a cliente digita algo
         function toggleMarquee(val) {
             const marquee = document.getElementById('lbl-marquee');
             if(val.length > 0) {
